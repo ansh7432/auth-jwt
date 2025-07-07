@@ -12,7 +12,37 @@ A Django REST Framework-based JWT authentication API with Docker support, design
 
 ## API Endpoints
 
-### 1. Login
+### 1. User Registration
+- **POST** `/api/auth/register/`
+- **Request Body:**
+  ```json
+  {
+    "username": "newuser",
+    "email": "newuser@example.com",
+    "password": "securepassword123",
+    "password_confirm": "securepassword123",
+    "first_name": "New",
+    "last_name": "User"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "message": "User registered successfully",
+    "user": {
+      "id": 4,
+      "username": "newuser",
+      "email": "newuser@example.com",
+      "first_name": "New",
+      "last_name": "User",
+      "date_joined": "2025-07-08T10:30:00Z"
+    },
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+    "expires": "2025-07-08T11:30:00Z"
+  }
+  ```
+
+### 2. Login
 - **POST** `/api/auth/login/`
 - **Request Body:**
   ```json
@@ -29,7 +59,7 @@ A Django REST Framework-based JWT authentication API with Docker support, design
   }
   ```
 
-### 2. Verify Token
+### 3. Verify Token
 - **POST** `/api/auth/verify/`
 - **Request Body:**
   ```json
@@ -45,7 +75,7 @@ A Django REST Framework-based JWT authentication API with Docker support, design
   }
   ```
 
-### 3. Validate Token
+### 4. Validate Token
 - **GET** `/api/auth/validate/`
 - **Headers:**
   ```
@@ -59,6 +89,11 @@ A Django REST Framework-based JWT authentication API with Docker support, design
     "expires": "2025-07-08T10:30:00Z"
   }
   ```
+
+### 5. API Documentation
+- **GET** `/swagger/` - Interactive Swagger UI
+- **GET** `/redoc/` - ReDoc documentation
+- **GET** `/api/auth/health/` - Health check endpoint
 
 ## Sample User Credentials
 
@@ -200,21 +235,35 @@ Your API will be available at `http://your-ec2-ip:8000/api/auth/`
 
 ### Using curl
 
-1. **Login:**
+1. **Register a new user:**
+   ```bash
+   curl -X POST http://localhost:8000/api/auth/register/ \
+     -H "Content-Type: application/json" \
+     -d '{
+       "username": "newuser",
+       "email": "newuser@example.com",
+       "password": "securepassword123",
+       "password_confirm": "securepassword123",
+       "first_name": "New",
+       "last_name": "User"
+     }'
+   ```
+
+2. **Login:**
    ```bash
    curl -X POST http://localhost:8000/api/auth/login/ \
      -H "Content-Type: application/json" \
      -d '{"username": "admin", "password": "admin123"}'
    ```
 
-2. **Verify token:**
+3. **Verify token:**
    ```bash
    curl -X POST http://localhost:8000/api/auth/verify/ \
      -H "Content-Type: application/json" \
      -d '{"token": "YOUR_TOKEN_HERE"}'
    ```
 
-3. **Validate token:**
+4. **Validate token:**
    ```bash
    curl -X GET http://localhost:8000/api/auth/validate/ \
      -H "Authorization: Bearer YOUR_TOKEN_HERE"
@@ -224,6 +273,17 @@ Your API will be available at `http://your-ec2-ip:8000/api/auth/`
 
 ```python
 import requests
+
+# Register a new user
+response = requests.post('http://localhost:8000/api/auth/register/', json={
+    'username': 'newuser',
+    'email': 'newuser@example.com',
+    'password': 'securepassword123',
+    'password_confirm': 'securepassword123',
+    'first_name': 'New',
+    'last_name': 'User'
+})
+print(response.json())
 
 # Login
 response = requests.post('http://localhost:8000/api/auth/login/', 

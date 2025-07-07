@@ -6,10 +6,13 @@ This is a complete JWT-based authentication API built with Django and Django RES
 ## Requirements Fulfillment
 
 ### 1. API Endpoints ✓
+- **POST /api/auth/register/** - User registration (bonus feature)
 - **POST /api/auth/login/** - User authentication with JWT token generation
 - **POST /api/auth/verify/** - Token verification
 - **GET /api/auth/validate/** - Token validation with user info
 - **GET /api/auth/health/** - Health check endpoint (bonus)
+- **GET /swagger/** - Interactive Swagger API documentation (bonus)
+- **GET /redoc/** - ReDoc API documentation (bonus)
 
 ### 2. Technical Requirements ✓
 - **Django + Django REST Framework** - ✓ Implemented

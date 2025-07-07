@@ -112,8 +112,68 @@ def test_api():
             print(f"   ✗ Invalid credentials test failed: {invalid_login_response.status_code}")
             return False
         
+        # Test 6: Test User Registration
+        print("\n6. Testing User Registration...")
+        registration_data = {
+            "username": f"testuser_{int(time.time())}",  # Unique username
+            "email": f"test_{int(time.time())}@example.com",
+            "password": "testpassword123",
+            "password_confirm": "testpassword123",
+            "first_name": "Test",
+            "last_name": "User"
+        }
+        
+        register_response = requests.post(
+            f"{BASE_URL}/register/",
+            json=registration_data,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        if register_response.status_code == 201:
+            register_data = register_response.json()
+            print(f"   ✓ User registration successful")
+            print(f"   User ID: {register_data['user']['id']}")
+            print(f"   Username: {register_data['user']['username']}")
+            print(f"   Email: {register_data['user']['email']}")
+            print(f"   Token: {register_data['token'][:50]}...")
+        else:
+            print(f"   ✗ User registration failed: {register_response.status_code}")
+            print(f"   Response: {register_response.text}")
+            return False
+        
+        # Test 7: Test Registration with Duplicate Username
+        print("\n7. Testing Registration with Duplicate Username...")
+        duplicate_registration_data = {
+            "username": "admin",  # This should already exist
+            "email": "admin2@example.com",
+            "password": "testpassword123",
+            "password_confirm": "testpassword123"
+        }
+        
+        duplicate_register_response = requests.post(
+            f"{BASE_URL}/register/",
+            json=duplicate_registration_data,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        if duplicate_register_response.status_code == 400:
+            print(f"   ✓ Duplicate username correctly rejected")
+            duplicate_data = duplicate_register_response.json()
+            print(f"   Error: {duplicate_data.get('error')}")
+        else:
+            print(f"   ✗ Duplicate username test failed: {duplicate_register_response.status_code}")
+            return False
+
         print("\n" + "=" * 50)
         print("All tests passed! 🎉")
+        print("\n📋 Test Summary:")
+        print("✓ Login endpoint")
+        print("✓ Token verification")
+        print("✓ Token validation")
+        print("✓ Invalid token handling")
+        print("✓ Invalid credentials handling")
+        print("✓ User registration")
+        print("✓ Duplicate username validation")
         return True
         
     except requests.exceptions.ConnectionError:

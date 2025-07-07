@@ -4,17 +4,82 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.db import transaction
 from datetime import datetime
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from .jwt_service import JWTService
 from .serializers import (
     LoginSerializer, 
     TokenVerifySerializer, 
     TokenResponseSerializer,
     ValidateResponseSerializer,
-    VerifyResponseSerializer
+    VerifyResponseSerializer,
+    UserRegistrationSerializer,
+    UserRegistrationResponseSerializer
 )
 
 
+@swagger_auto_schema(
+    method='post',
+    operation_description='Register a new user account',
+    request_body=UserRegistrationSerializer,
+    responses={
+        201: UserRegistrationResponseSerializer,
+        400: 'Bad request - validation errors'
+    }
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_view(request):
+    """
+    POST /api/auth/register/
+    Register a new user account
+    """
+    serializer = UserRegistrationSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(
+            {'error': 'Validation failed', 'details': serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        with transaction.atomic():
+            user = serializer.save()
+            
+            # Generate JWT token for the new user
+            token, expires = JWTService.generate_token(user)
+            
+            return Response({
+                'message': 'User registered successfully',
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'date_joined': user.date_joined.isoformat() + 'Z'
+                },
+                'token': token,
+                'expires': expires.isoformat() + 'Z'
+            }, status=status.HTTP_201_CREATED)
+            
+    except Exception as e:
+        return Response(
+            {'error': 'Registration failed', 'details': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@swagger_auto_schema(
+    method='post',
+    operation_description='Authenticate user and get JWT token',
+    request_body=LoginSerializer,
+    responses={
+        200: TokenResponseSerializer,
+        401: 'Unauthorized - invalid credentials'
+    }
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
@@ -48,6 +113,14 @@ def login_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='post',
+    operation_description='Verify if a JWT token is valid',
+    request_body=TokenVerifySerializer,
+    responses={
+        200: VerifyResponseSerializer
+    }
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def verify_token_view(request):
@@ -78,6 +151,23 @@ def verify_token_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='get',
+    operation_description='Validate JWT token and get user information',
+    manual_parameters=[
+        openapi.Parameter(
+            'Authorization',
+            openapi.IN_HEADER,
+            description="JWT token (format: 'Bearer <token>')",
+            type=openapi.TYPE_STRING,
+            required=True
+        )
+    ],
+    responses={
+        200: ValidateResponseSerializer,
+        401: 'Unauthorized - invalid or missing token'
+    }
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def validate_token_view(request):
@@ -118,6 +208,23 @@ def validate_token_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='get',
+    operation_description='Health check endpoint',
+    responses={
+        200: openapi.Response(
+            description='Health check response',
+            examples={
+                'application/json': {
+                    'status': 'healthy',
+                    'service': 'JWT Authentication API',
+                    'version': '1.0.0',
+                    'timestamp': '2025-07-08T10:30:00Z'
+                }
+            }
+        )
+    }
+)
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def health_check(request):
