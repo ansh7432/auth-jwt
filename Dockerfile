@@ -22,8 +22,8 @@ RUN mkdir -p /app/staticfiles
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Expose port
-EXPOSE 8000
+# Expose port (8080 is the default for Cloud Run)
+EXPOSE 8080
 
-# Run the application
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Run the application using PORT environment variable (defaults to 8080 if not set)
+CMD ["sh", "-c", "python manage.py runserver 0.0.0.0:${PORT:-8080}"]
