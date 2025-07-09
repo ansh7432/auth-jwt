@@ -22,6 +22,8 @@ RUN mkdir -p /app/staticfiles
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
+RUN python manage.py migrate
+
 # Expose port (8080 is the default for Cloud Run)
 EXPOSE 8080
 
