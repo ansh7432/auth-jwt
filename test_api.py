@@ -9,7 +9,7 @@ import sys
 import time
 
 # API base URL
-BASE_URL = "http://localhost:8000/api/auth"
+BASE_URL = "http://localhost:8080/api/auth"
 
 def test_api():
     print("Testing JWT Authentication API...")
