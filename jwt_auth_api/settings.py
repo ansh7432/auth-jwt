@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_yasg',
     'authentication',
+    'mongodb_api',
 ]
 
 MIDDLEWARE = [
@@ -90,6 +91,19 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+# MongoDB Configuration
+MONGODB_CONFIG = {
+    'host': 'mongodb+srv://ansh743:Anshsoni%40123@db.zenpcjo.mongodb.net/',
+    'database': 'auth_jwt_db',
+    'options': {
+        'authSource': 'admin',
+        'authMechanism': 'SCRAM-SHA-1',
+        'tlsCAFile': None,  # Let's handle SSL verification
+        'ssl': True,
+        'ssl_cert_reqs': 'CERT_NONE',  # This might help with SSL issues
     }
 }
 
@@ -155,6 +169,12 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'authentication.jwt_authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
     ],
 }
 

@@ -1,6 +1,6 @@
-# JWT Authentication API
+# JWT Authentication + MongoDB API
 
-A Django REST Framework JWT authentication API, containerized with Docker and ready for deployment on Google Cloud Run.
+A Django REST Framework JWT authentication API with MongoDB integration, containerized with Docker and ready for deployment on Google Cloud Run.
 
 ---
 
@@ -14,7 +14,10 @@ A Django REST Framework JWT authentication API, containerized with Docker and re
 ## Features
 
 - JWT-based authentication
+- **MongoDB integration** with full CRUD operations
 - User registration, login, token verify, and validate endpoints
+- **Flexible document storage** in MongoDB Atlas
+- **Query filtering and pagination** for MongoDB documents
 - Interactive API docs: Swagger (`/swagger/`) & ReDoc (`/redoc/`)
 - Dockerized for easy deployment
 
@@ -22,6 +25,7 @@ A Django REST Framework JWT authentication API, containerized with Docker and re
 
 ## API Endpoints
 
+### Authentication Endpoints
 | Method | Endpoint                | Description                |
 |--------|-------------------------|----------------------------|
 | POST   | `/api/auth/register/`   | Register a new user        |
@@ -29,25 +33,87 @@ A Django REST Framework JWT authentication API, containerized with Docker and re
 | POST   | `/api/auth/verify/`     | Verify JWT token           |
 | GET    | `/api/auth/validate/`   | Validate JWT token         |
 | GET    | `/api/auth/health/`     | Health check               |
-| GET    | `/swagger/`             | Swagger API docs           |
-| GET    | `/redoc/`               | ReDoc API docs             |
+
+### MongoDB API Endpoints
+| Method | Endpoint                           | Description                    |
+|--------|------------------------------------|--------------------------------|
+| GET    | `/api/mongodb/test-connection/`    | Test MongoDB connection        |
+| POST   | `/api/mongodb/documents/create/`   | Create new document            |
+| GET    | `/api/mongodb/documents/`          | Get documents (with filtering) |
+| GET    | `/api/mongodb/documents/{id}/`     | Get specific document          |
+| PUT    | `/api/mongodb/documents/{id}/update/` | Update document             |
+| DELETE | `/api/mongodb/documents/{id}/delete/` | Delete document             |
+| GET    | `/api/mongodb/stats/`              | Get collection statistics      |
+
+### Documentation
+| Method | Endpoint    | Description           |
+|--------|-------------|-----------------------|
+| GET    | `/swagger/` | Swagger API docs      |
+| GET    | `/redoc/`   | ReDoc API docs        |
 
 ---
 
 ## Example Usage
 
-### Register
+### Authentication Examples
+
+#### Register
 ```bash
 curl -X POST https://auth-jwt-445166878228.europe-west1.run.app/api/auth/register/ \
   -H "Content-Type: application/json" \
   -d '{"username":"newuser","email":"newuser@example.com","password":"securepassword123","password_confirm":"securepassword123"}'
 ```
 
-### Login
+#### Login
 ```bash
 curl -X POST https://auth-jwt-445166878228.europe-west1.run.app/api/auth/login/ \
   -H "Content-Type: application/json" \
   -d '{"username":"newuser","password":"securepassword123"}'
+```
+
+### MongoDB API Examples
+
+#### Test MongoDB Connection
+```bash
+curl -X GET https://auth-jwt-445166878228.europe-west1.run.app/api/mongodb/test-connection/
+```
+
+#### Create Document
+```bash
+curl -X POST https://auth-jwt-445166878228.europe-west1.run.app/api/mongodb/documents/create/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "age": 30,
+    "description": "Sample user document",
+    "data": {
+      "location": "New York",
+      "skills": ["Python", "MongoDB", "Django"],
+      "preferences": {
+        "theme": "dark",
+        "language": "en"
+      }
+    }
+  }'
+```
+
+#### Get Documents with Filtering
+```bash
+curl -X GET "https://auth-jwt-445166878228.europe-west1.run.app/api/mongodb/documents/?name=John&limit=10&sort_order=desc" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+#### Update Document
+```bash
+curl -X PUT https://auth-jwt-445166878228.europe-west1.run.app/api/mongodb/documents/DOCUMENT_ID/update/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "name": "John Smith",
+    "age": 31
+  }'
 ```
 
 ---
